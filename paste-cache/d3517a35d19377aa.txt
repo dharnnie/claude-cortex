@@ -1,0 +1,88 @@
+Model Conventions
+Model Organization Order
+rubyclass Order < ApplicationRecord
+
+# 1. Constants
+
+STATUSES = %w[pending processing shipped delivered].freeze
+
+# 2. Concerns/Modules
+
+include Trackable
+
+# 3. Associations (belongs_to → has_one → has_many)
+
+belongs_to :user
+has_many :line_items, dependent: :destroy
+
+# 4. Validations
+
+validates :status, presence: true, inclusion: { in: STATUSES }
+
+# 5. Callbacks (use sparingly!)
+
+after_create_commit :send_notification
+
+# 6. Scopes
+
+scope :recent, -> { order(created_at: :desc) }
+scope :pending, -> { where(status: :pending) }
+
+# 7. Enums (Rails 7+ syntax)
+
+enum :status, { pending: "pending", shipped: "shipped" }, prefix: true
+
+# 8. Delegations
+
+delegate :email, to: :user, prefix: true
+
+# 9. Class methods
+
+def self.total_revenue
+sum(:total_cents)
+end
+
+# 10. Instance methods
+
+def cancelable?
+status_pending?
+end
+
+private
+
+# 11. Private methods
+
+def send_notification
+OrderMailer.confirmation(self).deliver_later
+end
+end
+Database Migrations
+class CreateOrders < ActiveRecord::Migration[8.0]
+def change
+create_table :orders do |t|
+t.references :user, null: false, foreign_key: true
+t.string :status, null: false, default: "pending"
+t.integer :total_cents, null: false, default: 0
+
+      t.timestamps
+    end
+
+    # ALWAYS add indexes for:
+    add_index :orders, :status                    # WHERE clauses
+    add_index :orders, [:user_id, :status]        # Composite queries
+
+end
+end
+Anti-Patterns to Avoid
+BadGoodWhyupdate_attributeupdate or update!Skips validationsdelete / delete_alldestroy / destroy_allSkips callbacksdefault_scopeNamed scopesHard to overridefind_by_email(x)find_by(email: x)Deprecated syntaxTime.nowTime.currentTimezone aware
+Associations
+
+# Use dependent options
+
+has_many :comments, dependent: :destroy # Delete children
+has_many :audit_logs, dependent: :nullify # Keep but unlink
+has_many :critical_records, dependent: :restrict_with_error
+
+# Counter caches for counts
+
+belongs_to :user, counter_cache: true # Requires orders_count column

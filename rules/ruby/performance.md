@@ -1,0 +1,202 @@
+# Performance Guidelines
+
+## N+1 Query Prevention
+
+```ruby
+# BAD - N+1 queries
+orders = Order.all
+orders.each { |o| puts o.user.email }
+
+# GOOD - eager loading
+orders = Order.includes(:user).all
+orders.each { |o| puts o.user.email }
+
+# Use bullet gem in development
+# Gemfile
+gem "bullet", group: :development
+```
+
+## Database Indexes
+
+```ruby
+# ALWAYS index:
+# - Foreign keys
+# - Columns in WHERE clauses
+# - Columns in ORDER BY
+# - Columns in JOIN conditions
+
+class AddIndexes < ActiveRecord::Migration[8.0]
+  def change
+    add_index :orders, :user_id                  # FK
+    add_index :orders, :status                   # WHERE
+    add_index :orders, :created_at               # ORDER BY
+    add_index :orders, [:user_id, :status]       # Composite
+    add_index :orders, :email, unique: true      # Unique constraint
+  end
+end
+```
+
+## Pagination
+
+```ruby
+# ALWAYS paginate collections
+
+# Using Pagy (fastest)
+pagy, records = pagy(Order.all, items: 25)
+
+# Using Kaminari
+Order.page(params[:page]).per(25)
+
+# NEVER
+Order.all  # Loads entire table
+```
+
+## Counter Caches
+
+```ruby
+# Instead of user.orders.count (SQL query each time)
+# Add counter cache
+
+# Migration
+add_column :users, :orders_count, :integer, default: 0, null: false
+
+# Model
+class Order < ApplicationRecord
+  belongs_to :user, counter_cache: true
+end
+
+# Now user.orders_count is instant
+```
+
+## Select Only What You Need
+
+```ruby
+# BAD - loads all columns
+users = User.all
+
+# GOOD - loads only needed columns
+users = User.select(:id, :email, :name)
+
+# For specific values
+emails = User.pluck(:email)
+```
+
+## Batch Processing
+
+```ruby
+# BAD - loads all records into memory
+User.all.each { |u| u.send_newsletter }
+
+# GOOD - processes in batches
+User.find_each(batch_size: 1000) do |user|
+  user.send_newsletter
+end
+
+# For updates
+User.in_batches(of: 1000).update_all(newsletter_sent: true)
+```
+
+## Caching
+
+### Fragment Caching
+
+```erb
+<%# Cache entire partial %>
+<% cache @order do %>
+  <%= render @order %>
+<% end %>
+
+<%# Russian doll caching %>
+<% cache [@order, @order.line_items.maximum(:updated_at)] do %>
+  <% @order.line_items.each do |item| %>
+    <% cache item do %>
+      <%= render item %>
+    <% end %>
+  <% end %>
+<% end %>
+```
+
+### Low-Level Caching
+
+```ruby
+# Cache expensive computations
+def expensive_calculation
+  Rails.cache.fetch("user_#{id}_stats", expires_in: 1.hour) do
+    # expensive operation
+    orders.sum(:total_cents)
+  end
+end
+```
+
+### HTTP Caching
+
+```ruby
+class ProductsController < ApplicationController
+  def show
+    @product = Product.find(params[:id])
+
+    # Browser caching
+    expires_in 1.hour, public: true
+
+    # Conditional GET
+    fresh_when(@product)
+  end
+end
+```
+
+## Background Jobs
+
+```ruby
+# Move slow operations to background
+class OrdersController < ApplicationController
+  def create
+    @order = Order.create!(order_params)
+
+    # Don't block request
+    SendConfirmationEmailJob.perform_later(@order.id)
+    GenerateInvoicePdfJob.perform_later(@order.id)
+
+    redirect_to @order
+  end
+end
+```
+
+## Database Query Optimization
+
+```ruby
+# Use exists? instead of present?
+
+# BAD
+if Order.where(user: user).present?
+
+# GOOD
+if Order.exists?(user: user)
+
+# Use count vs length vs size
+Order.count      # SQL COUNT
+@orders.length   # Loads all records, counts in Ruby
+@orders.size     # Smart: uses count if not loaded
+```
+
+## Monitoring Tools
+
+```ruby
+# Gemfile
+gem "rack-mini-profiler"   # Dev profiling
+gem "memory_profiler"      # Memory analysis
+gem "stackprof"            # CPU profiling
+
+# Production
+gem "skylight"             # or Scout, New Relic, Datadog
+```
+
+## Quick Wins Checklist
+
+- [ ] Add bullet gem to catch N+1s
+- [ ] Index all foreign keys
+- [ ] Paginate all collections
+- [ ] Use counter caches for counts
+- [ ] Move emails/PDFs to background jobs
+- [ ] Cache expensive view fragments
+- [ ] Use select to limit columns
+- [ ] Use exists? over present?

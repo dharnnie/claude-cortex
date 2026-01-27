@@ -55,7 +55,14 @@ rules/
 │   ├── concurrency.md         # Context, channels, sync primitives
 │   ├── style.md               # Naming, formatting, idioms
 │   └── dependencies.md        # Stdlib first, when to add deps
-└── ruby/                      # (Use project-level rules for Ruby)
+└── ruby/
+    ├── models.md              # Model conventions, migrations
+    ├── services.md            # Service objects, query objects
+    ├── testing.md             # RSpec, factories, request specs
+    ├── api.md                 # API design, serializers
+    ├── performance.md         # N+1, caching, background jobs
+    ├── security.md            # Auth, SQL injection prevention
+    └── contributing.md        # Ruby-specific workflow, CI
 ```
 
 Rules use `paths:` frontmatter to apply only to relevant files:

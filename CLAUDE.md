@@ -36,4 +36,10 @@
 - @rules/golang/dependencies.md - Stdlib first, recommended libs
 
 ### Ruby
-- See project-level .claude/rules/ in Ruby projects
+- @rules/ruby/models.md - Model conventions, migrations
+- @rules/ruby/services.md - Service objects, query objects, form objects
+- @rules/ruby/testing.md - RSpec, factories, request specs
+- @rules/ruby/api.md - API design, serializers, versioning
+- @rules/ruby/performance.md - N+1, caching, background jobs
+- @rules/ruby/security.md - Auth, authorization, SQL injection
+- @rules/ruby/contributing.md - Ruby-specific workflow, CI
