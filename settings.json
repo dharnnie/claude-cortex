@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title 'Claude Code' -message 'Permission required to execute action' && for i in 1 2 3 4 5; do afplay /System/Library/Sounds/Submarine.aiff; done"
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title 'Claude Code' -message 'Waiting for your input' && for i in 1 2 3 4 5; do afplay /System/Library/Sounds/Submarine.aiff; done"
+          }
+        ]
+      }
+    ]
+  }
+}
