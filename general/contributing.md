@@ -205,3 +205,68 @@ High-level strategy
 3. Add regression test
 4. Fast-track review
 5. Merge and deploy
+
+## Session Logging
+
+Maintain a local session log for context continuity across AI-assisted sessions.
+
+### Setup
+
+Create `.claude/session-log.md` (gitignored):
+
+```markdown
+# Session Log
+
+## 2024-01-28
+- Implemented JWT refresh endpoint
+- Fixed order validation bug
+- Refactored payment service into separate module
+- TODO: Add integration tests for payment flow
+```
+
+### Convention
+
+Update the session log before each `git push`:
+- What was accomplished
+- Decisions made and why
+- Open questions or TODOs
+- Blockers encountered
+
+This file is **local only**—not committed. It provides context for resuming work in future sessions.
+
+## Changelog
+
+Maintain a `CHANGELOG.md` for team-wide documentation. Follow [Keep a Changelog](https://keepachangelog.com/).
+
+### Format
+
+```markdown
+# Changelog
+
+## [Unreleased]
+### Added
+- JWT token refresh endpoint
+
+### Changed
+- Payment service now uses Stripe SDK v3
+
+### Fixed
+- Order validation accepts zero quantity
+
+## [1.2.0] - 2024-01-15
+### Added
+- User authentication system
+```
+
+### Categories
+
+- **Added** - New features
+- **Changed** - Changes to existing functionality
+- **Deprecated** - Soon-to-be removed features
+- **Removed** - Removed features
+- **Fixed** - Bug fixes
+- **Security** - Vulnerability fixes
+
+### Convention
+
+Update `CHANGELOG.md` under `[Unreleased]` with each PR. Move entries to a version header on release.
