@@ -14,7 +14,7 @@ CLAUDE_DIR="$HOME/.claude"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Default rules repo - change this to your fork
-RULES_REPO="${RULES_REPO:-https://github.com/YOUR_USERNAME/claude-engram.git}"
+RULES_REPO="${RULES_REPO:-https://github.com/YOUR_USERNAME/claude-cortex.git}"
 
 echo "Setting up Claude Code configuration..."
 
@@ -61,7 +61,7 @@ cd "$CLAUDE_DIR"
 if [ ! -d "$CLAUDE_DIR/rules" ]; then
     echo "Adding rules submodule..."
 
-    if [ "$RULES_REPO" = "https://github.com/YOUR_USERNAME/claude-engram.git" ]; then
+    if [ "$RULES_REPO" = "https://github.com/YOUR_USERNAME/claude-cortex.git" ]; then
         echo ""
         echo "WARNING: Using placeholder repo URL."
         echo "Either:"

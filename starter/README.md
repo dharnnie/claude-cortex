@@ -17,11 +17,11 @@ Quick setup for your `~/.claude` configuration with rules as a git submodule.
 
 ```bash
 # Clone this repo
-git clone https://github.com/YOUR_USERNAME/claude-engram.git
+git clone https://github.com/YOUR_USERNAME/claude-cortex.git
 cd claude-code-rules/starter
 
 # Set your fork URL (or use the default)
-export RULES_REPO="https://github.com/YOUR_USERNAME/claude-engram.git"
+export RULES_REPO="https://github.com/YOUR_USERNAME/claude-cortex.git"
 
 # Run install script
 ./install.sh
@@ -41,7 +41,7 @@ cp /path/to/starter/settings.json.example settings.json
 cp /path/to/starter/.gitignore.example .gitignore
 
 # Add rules as submodule
-git submodule add https://github.com/YOUR_USERNAME/claude-engram.git rules
+git submodule add https://github.com/YOUR_USERNAME/claude-cortex.git rules
 ```
 
 ## After Setup
