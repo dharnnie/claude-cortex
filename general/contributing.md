@@ -54,6 +54,29 @@ chore(deps): bump go to 1.22
 - One logical change per commit
 - Never commit broken code to main
 
+### Worktrees
+
+Use worktrees for parallel work without stashing or switching branches:
+
+```bash
+# Create worktree for a feature (from repo root)
+git worktree add ../myproject-feature-auth feature/auth
+
+# Create worktree for PR review
+git worktree add ../myproject-pr-123 origin/pr-branch
+
+# List active worktrees
+git worktree list
+
+# Remove when done
+git worktree remove ../myproject-feature-auth
+```
+
+**Conventions:**
+- Place worktrees as siblings to main repo: `../reponame-purpose`
+- Never commit from a worktree you're using for review only
+- Clean up worktrees promptly—don't let them accumulate
+
 ## Pull Requests
 
 ### Before Opening PR
