@@ -1,0 +1,18 @@
+# Local overrides (never commit)
+settings.local.json
+CLAUDE.local.md
+
+# Runtime directories (machine-specific)
+cache/
+paste-cache/
+debug/
+plans/
+projects/
+shell-snapshots/
+todos/
+file-history/
+statsig/
+history.jsonl
+
+# OS artifacts
+.DS_Store

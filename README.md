@@ -1,108 +1,129 @@
-# Claude Code Dotfiles
+# Claude Code Rules
 
-Personal Claude Code configuration for consistent AI-assisted development across all projects.
+A library of coding convention rules for Claude Code. Use as a git submodule to maintain consistent AI-assisted development standards.
 
-## Quick Start
+## Usage
 
-### New Machine Setup
+### As a Submodule (Recommended)
 
-```bash
-# Clone the repo
-git clone git@github.com:YOUR_USERNAME/claude-code-dotfiles.git ~/engineering/gen-ai/claude-code-dotfiles
-
-# Symlink to ~/.claude
-rm -rf ~/.claude
-ln -s ~/engineering/gen-ai/claude-code-dotfiles ~/.claude
-
-# Verify
-ls -la ~/.claude
-```
-
-### Install Dependencies (macOS)
+Add to your `~/.claude` or project:
 
 ```bash
-# For notifications
-brew install terminal-notifier
+cd ~/.claude  # or your project
+git submodule add https://github.com/YOUR_USERNAME/claude-code-rules.git rules
 ```
 
-## What's Included
+Reference rules in your `CLAUDE.md`:
 
-### Notifications (`settings.json`)
+```markdown
+## Rules Reference
 
-System notifications when Claude needs attention:
-- **Permission prompts** - When Claude needs approval to run a command
-- **Idle prompts** - When Claude has been waiting 60+ seconds for input
+### General
+- @rules/general/contributing.md
+- @rules/general/security.md
 
-Uses Submarine sound (plays 5x) via `terminal-notifier`.
+### Go
+- @rules/golang/project-structure.md
+- @rules/golang/error-handling.md
+- @rules/golang/testing.md
+```
 
-### Global Preferences (`CLAUDE.md`)
+### Update Rules
 
-Personal coding standards and workflow preferences that apply to all projects.
+```bash
+git submodule update --remote rules
+git add rules
+git commit -m "chore: update rules"
+```
 
-### Rules
+## Available Rules
 
-Modular rule files that provide language-specific guidance:
+### General (All Languages)
+
+| File | Description |
+|------|-------------|
+| `general/contributing.md` | Git workflow, branches, commits, PRs, code review |
+| `general/security.md` | Security checklist, input validation, secrets management |
+
+### Go
+
+| File | Description |
+|------|-------------|
+| `golang/project-structure.md` | Package design, `cmd/`, `internal/`, `pkg/` layout |
+| `golang/error-handling.md` | Wrapping errors, sentinel errors, custom types |
+| `golang/testing.md` | Table-driven tests, mocks, test helpers |
+| `golang/concurrency.md` | Context, goroutines, channels, sync primitives |
+| `golang/style.md` | Naming, formatting, idioms |
+| `golang/dependencies.md` | Stdlib first, when to add deps |
+
+### Ruby / Rails
+
+| File | Description |
+|------|-------------|
+| `ruby/models.md` | Model conventions, migrations, associations |
+| `ruby/services.md` | Service objects, query objects, form objects |
+| `ruby/testing.md` | RSpec, FactoryBot, request specs |
+| `ruby/api.md` | API design, serializers, versioning |
+| `ruby/performance.md` | N+1 prevention, caching, background jobs |
+| `ruby/security.md` | Authentication, authorization, SQL injection |
+| `ruby/contributing.md` | Ruby-specific workflow, CI |
+
+## Quick Start with Starter
+
+For a complete `~/.claude` setup including notifications, see `starter/`:
+
+```bash
+cd starter
+./install.sh
+```
+
+This creates `~/.claude` with:
+- `CLAUDE.md` - Global preferences template
+- `settings.json` - Notification hooks
+- `rules/` - This repo as a submodule
+
+See `starter/README.md` for details.
+
+## Structure
 
 ```
-rules/
+claude-code-rules/
+├── README.md
 ├── general/
-│   ├── contributing.md    # Git workflow, PRs, conventional commits
-│   └── security.md        # Security checklist (all languages)
+│   ├── contributing.md
+│   └── security.md
 ├── golang/
-│   ├── project-structure.md   # cmd/, internal/, pkg/ layout
-│   ├── error-handling.md      # Wrapping, sentinel errors, patterns
-│   ├── testing.md             # Table-driven tests, mocks
-│   ├── concurrency.md         # Context, channels, sync primitives
-│   ├── style.md               # Naming, formatting, idioms
-│   └── dependencies.md        # Stdlib first, when to add deps
-└── ruby/
-    ├── models.md              # Model conventions, migrations
-    ├── services.md            # Service objects, query objects
-    ├── testing.md             # RSpec, factories, request specs
-    ├── api.md                 # API design, serializers
-    ├── performance.md         # N+1, caching, background jobs
-    ├── security.md            # Auth, SQL injection prevention
-    └── contributing.md        # Ruby-specific workflow, CI
+│   ├── concurrency.md
+│   ├── dependencies.md
+│   ├── error-handling.md
+│   ├── project-structure.md
+│   ├── style.md
+│   └── testing.md
+├── ruby/
+│   ├── api.md
+│   ├── contributing.md
+│   ├── models.md
+│   ├── performance.md
+│   ├── security.md
+│   ├── services.md
+│   └── testing.md
+└── starter/
+    ├── README.md
+    ├── CLAUDE.md.example
+    ├── settings.json.example
+    ├── .gitignore.example
+    └── install.sh
 ```
 
-Rules use `paths:` frontmatter to apply only to relevant files:
+## Adding Rules
 
-```yaml
----
-paths:
-  - "**/*.go"
----
-```
-
-## How It Works
-
-```
-~/.claude/                      ← Symlinked to this repo
-├── settings.json               ← Notifications, permissions
-├── CLAUDE.md                   ← Global preferences
-└── rules/                      ← Language-specific rules
-    ├── general/                ← All languages
-    ├── golang/                 ← Go projects
-    └── ruby/                   ← Ruby projects
-
-your-project/.claude/           ← Project-specific (optional)
-├── settings.json               ← Project overrides
-└── rules/                      ← Project-specific rules
-```
-
-**Precedence:** Project-level settings override user-level (global) settings.
-
-## Adding New Languages
-
-1. Create a directory: `rules/<language>/`
-2. Add rule files with `paths:` frontmatter
-3. Update `CLAUDE.md` to reference new rules
-
-Example for TypeScript:
+### New Language
 
 ```bash
-mkdir -p rules/typescript
+mkdir -p typescript
 ```
+
+Create rule files with optional `paths:` frontmatter:
 
 ```markdown
 ---
@@ -113,40 +134,13 @@ paths:
 
 # TypeScript Conventions
 
-- Use strict mode
-- Prefer interfaces over types
-- ...
+...
 ```
 
-## Customization
+### Per-Project Rules
 
-### Change Notification Sound
-
-Edit `settings.json` and replace `Submarine` with another macOS sound:
-- `Glass`, `Ping`, `Pop`, `Purr`, `Funk`, `Hero`, `Morse`, `Sosumi`, `Tink`
-
-### Add Permissions
-
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(go test ./...)",
-      "Bash(make *)"
-    ]
-  }
-}
-```
-
-## Files Not Committed
-
-These are gitignored (machine-specific runtime data):
-- `cache/`
-- `projects/`
-- `todos/`
-- `history.jsonl`
-- `settings.local.json`
+Add project-specific rules in your project's `.claude/rules/` directory. Project rules take precedence over global rules.
 
 ## License
 
-Personal configuration - fork and customize for your own use.
+MIT - Fork and customize for your own use.
