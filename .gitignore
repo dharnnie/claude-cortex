@@ -1,13 +1,18 @@
 .DS_Store
 
+# IDE
+ide/
+
 # Runtime directories
 cache/
 debug/
 file-history/
 plans/
 projects/
+session-env/
 shell-snapshots/
 statsig/
+telemetry/
 todos/
 
 # Runtime files
