@@ -13,6 +13,12 @@ cd ~/.claude  # or your project
 git submodule add https://github.com/dharnnie/claude-cortex.git rules
 ```
 
+> **Want to customize?** Fork this repo first, then use your fork URL:
+> ```bash
+> git submodule add https://github.com/YOUR_USERNAME/claude-cortex.git rules
+> ```
+> This lets you modify rules for your team while still pulling upstream updates.
+
 Reference rules in your `CLAUDE.md`:
 
 ```markdown

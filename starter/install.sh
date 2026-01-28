@@ -13,8 +13,8 @@ set -e
 CLAUDE_DIR="$HOME/.claude"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Default rules repo - change this to your fork
-RULES_REPO="${RULES_REPO:-https://github.com/YOUR_USERNAME/claude-cortex.git}"
+# Default rules repo - override with RULES_REPO env var to use your fork
+RULES_REPO="${RULES_REPO:-https://github.com/dharnnie/claude-cortex.git}"
 
 echo "Setting up Claude Code configuration..."
 
@@ -59,21 +59,9 @@ fi
 cd "$CLAUDE_DIR"
 
 if [ ! -d "$CLAUDE_DIR/rules" ]; then
-    echo "Adding rules submodule..."
-
-    if [ "$RULES_REPO" = "https://github.com/YOUR_USERNAME/claude-cortex.git" ]; then
-        echo ""
-        echo "WARNING: Using placeholder repo URL."
-        echo "Either:"
-        echo "  1. Set RULES_REPO environment variable before running:"
-        echo "     RULES_REPO=https://github.com/you/claude-code-rules.git ./install.sh"
-        echo "  2. Or manually add the submodule after:"
-        echo "     cd ~/.claude && git submodule add <your-rules-repo> rules"
-        echo ""
-    else
-        git submodule add "$RULES_REPO" rules
-        echo "  Added rules submodule from $RULES_REPO"
-    fi
+    echo "Adding rules submodule from $RULES_REPO..."
+    git submodule add "$RULES_REPO" rules
+    echo "  Added rules submodule"
 else
     echo "  rules/ already exists, skipping submodule"
 fi

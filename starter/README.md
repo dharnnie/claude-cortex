@@ -13,17 +13,25 @@ Quick setup for your `~/.claude` configuration with rules as a git submodule.
 
 ## Quick Setup
 
+### Choose Your Approach
+
+| Approach | When to Use | URL |
+|----------|-------------|-----|
+| **Use directly** | You want the rules as-is | `https://github.com/dharnnie/claude-cortex.git` |
+| **Fork first** | You want to customize rules for your team | `https://github.com/YOUR_USERNAME/claude-cortex.git` |
+
 ### Option 1: Automated Install
 
 ```bash
-# Clone this repo
-git clone https://github.com/YOUR_USERNAME/claude-cortex.git
-cd claude-code-rules/starter
+# Clone the repo (or your fork)
+git clone https://github.com/dharnnie/claude-cortex.git
+cd claude-cortex/starter
 
-# Set your fork URL (or use the default)
+# Run install script (uses original repo by default)
+./install.sh
+
+# OR: Use your fork instead
 export RULES_REPO="https://github.com/YOUR_USERNAME/claude-cortex.git"
-
-# Run install script
 ./install.sh
 ```
 
@@ -40,8 +48,9 @@ cp /path/to/starter/CLAUDE.md.example CLAUDE.md
 cp /path/to/starter/settings.json.example settings.json
 cp /path/to/starter/.gitignore.example .gitignore
 
-# Add rules as submodule
-git submodule add https://github.com/YOUR_USERNAME/claude-cortex.git rules
+# Add rules as submodule (use original repo or your fork)
+git submodule add https://github.com/dharnnie/claude-cortex.git rules
+# OR: git submodule add https://github.com/YOUR_USERNAME/claude-cortex.git rules
 ```
 
 ## After Setup
