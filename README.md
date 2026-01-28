@@ -1,4 +1,4 @@
-# Claude Code Rules
+# Engram
 
 A library of coding convention rules for Claude Code. Use as a git submodule to maintain consistent AI-assisted development standards.
 
@@ -10,7 +10,7 @@ Add to your `~/.claude` or project:
 
 ```bash
 cd ~/.claude  # or your project
-git submodule add https://github.com/YOUR_USERNAME/claude-code-rules.git rules
+git submodule add https://github.com/YOUR_USERNAME/engram.git rules
 ```
 
 Reference rules in your `CLAUDE.md`:
@@ -87,7 +87,7 @@ See `starter/README.md` for details.
 ## Structure
 
 ```
-claude-code-rules/
+engram/
 ├── README.md
 ├── general/
 │   ├── contributing.md

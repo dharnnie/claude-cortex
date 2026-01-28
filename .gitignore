@@ -1,2 +1,15 @@
 .DS_Store
+
+# Runtime directories
+cache/
+debug/
+file-history/
 plans/
+projects/
+shell-snapshots/
+statsig/
+todos/
+
+# Runtime files
+history.jsonl
+stats-cache.json
