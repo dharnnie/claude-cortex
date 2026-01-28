@@ -10,7 +10,7 @@ Add to your `~/.claude` or project:
 
 ```bash
 cd ~/.claude  # or your project
-git submodule add https://github.com/YOUR_USERNAME/claude-cortex.git rules
+git submodule add https://github.com/dharnnie/claude-cortex.git rules
 ```
 
 Reference rules in your `CLAUDE.md`:
