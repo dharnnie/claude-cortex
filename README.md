@@ -74,6 +74,25 @@ git commit -m "chore: update rules"
 | `ruby/security.md` | Authentication, authorization, SQL injection |
 | `ruby/contributing.md` | Ruby-specific workflow, CI |
 
+## Project-Level Setup
+
+Use `setup.sh` to auto-generate a project-level `CLAUDE.md` that references only the rules relevant to your project's languages.
+
+```bash
+# From your project directory:
+/path/to/claude-cortex/setup.sh
+
+# Or with options:
+/path/to/claude-cortex/setup.sh --dry-run          # Preview without writing
+/path/to/claude-cortex/setup.sh --force             # Overwrite existing CLAUDE.md
+/path/to/claude-cortex/setup.sh --output custom.md  # Custom output path
+/path/to/claude-cortex/setup.sh --rules-path /path/to/rules  # Custom rules location
+```
+
+The script detects language marker files (`go.mod`, `Gemfile`, `package.json`, etc.) in the current directory and includes matching rule sets. General rules are always included.
+
+> **Note:** This is for *project-level* setup. For global `~/.claude` configuration, see the [Starter](#quick-start-with-starter) section below.
+
 ## Quick Start with Starter
 
 For a complete `~/.claude` setup including notifications, see `starter/`:
@@ -95,6 +114,7 @@ See `starter/README.md` for details.
 ```
 claude-cortex/
 ├── README.md
+├── setup.sh
 ├── general/
 │   ├── contributing.md
 │   └── security.md
