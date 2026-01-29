@@ -74,7 +74,7 @@ git worktree remove ../myproject-feature-auth
 
 **Conventions:**
 - Place worktrees as siblings to main repo: `../reponame-purpose`
-- Never commit from a worktree you're using for review only
+- Don't commit from review worktrees—they're for reading and testing someone else's branch, not pushing changes onto it
 - Clean up worktrees promptly—don't let them accumulate
 
 ## Pull Requests
