@@ -102,10 +102,30 @@ stored_checksum() {
   fi
   local line
   line="$(grep "  ${rel_path}$" "$CHECKSUMS_FILE" 2>/dev/null || true)"
-  if [ -n "$line" ]; then
-    echo "$line" | cut -d' ' -f1
-  else
+  if [ -z "$line" ]; then
     echo ""
+    return
+  fi
+  local hash
+  hash="$(echo "$line" | cut -d' ' -f1)"
+  # Validate: SHA-256 hashes are exactly 64 hex characters
+  if echo "$hash" | grep -qE '^[0-9a-f]{64}$'; then
+    echo "$hash"
+  else
+    warn "Corrupt checksum entry for $rel_path — treating as untracked"
+    echo ""
+  fi
+}
+
+# Back up a file before overwriting (for --force safety)
+backup_file() {
+  local file="$1"
+  if [ -f "$file" ]; then
+    local backup="${file}.bak"
+    cp "$file" "$backup"
+    info "Backed up $(basename "$file") → $(basename "$backup")"
+    info "  View:    cat $(basename "$backup")"
+    info "  Restore: mv $(basename "$backup") $(basename "$file")"
   fi
 }
 
@@ -247,16 +267,17 @@ generate_claude_md() {
 
 # ── Clone repo to temp directory ──────────────────────────────────────────────
 clone_repo() {
-  local tmp_dir
-  tmp_dir="$(mktemp -d)"
-  trap 'rm -rf "$tmp_dir"' EXIT
+  TMP_DIR="$(mktemp -d)"
+  trap 'rm -rf "$TMP_DIR"' EXIT
 
   echo "Fetching claude-cortex from $REPO_URL ..."
-  if ! git clone --quiet --depth 1 "$REPO_URL" "$tmp_dir/claude-cortex" 2>/dev/null; then
+  if ! git clone --quiet --depth 1 "$REPO_URL" "$TMP_DIR/claude-cortex" 2>/dev/null; then
     error "Failed to clone $REPO_URL. Check your network connection and repo URL."
   fi
 
-  CLONE_DIR="$tmp_dir/claude-cortex"
+  CLONE_DIR="$TMP_DIR/claude-cortex"
+  STAGING_DIR="$TMP_DIR/staging"
+  mkdir -p "$STAGING_DIR"
 }
 
 # ── Write checksums file ─────────────────────────────────────────────────────
@@ -311,6 +332,26 @@ copy_rules_dir() {
   done
 }
 
+# ── Stage rule files into staging directory ───────────────────────────────────
+# Stages files so they can be moved atomically into the final destination.
+stage_rules_dir() {
+  local src_dir="$1"
+  local dir_name="$2"
+  local dest_dir="$STAGING_DIR/$dir_name"
+
+  if [ ! -d "$src_dir" ]; then
+    return
+  fi
+
+  mkdir -p "$dest_dir"
+
+  for file in "$src_dir"/*.md; do
+    [ -f "$file" ] || continue
+    cp "$file" "$dest_dir/$(basename "$file")"
+    info "Staged $dir_name/$(basename "$file")"
+  done
+}
+
 # ── Fresh install ─────────────────────────────────────────────────────────────
 do_install() {
   local scan_dir="$TARGET_DIR"
@@ -335,27 +376,53 @@ do_install() {
     echo "No language markers detected — installing general rules only."
   fi
 
-  # Create rules directory
   if [ "$DRY_RUN" = true ]; then
+    # Dry run: just report what would happen
     info "[dry-run] Would create $RULES_DIR/"
-  else
-    mkdir -p "$RULES_DIR"
+    copy_rules_dir "$CLONE_DIR/general" "general"
+    for dir in $detected_dirs; do
+      copy_rules_dir "$CLONE_DIR/$dir" "$dir"
+    done
+    info "[dry-run] Would write .checksums"
+
+    local rules_prefix=".claude/rules/"
+    if [ "$GLOBAL" = true ]; then
+      rules_prefix="rules/"
+    fi
+    info "[dry-run] Would generate CLAUDE.md:"
+    echo "---"
+    generate_claude_md "$rules_prefix"
+    echo "---"
+    echo ""
+    echo "Dry run complete — no files were written."
+    return
   fi
 
-  # Always copy general rules
-  copy_rules_dir "$CLONE_DIR/general" "general"
-
-  # Copy detected language rules
+  # Stage all files into temp directory first
+  stage_rules_dir "$CLONE_DIR/general" "general"
   for dir in $detected_dirs; do
-    copy_rules_dir "$CLONE_DIR/$dir" "$dir"
+    stage_rules_dir "$CLONE_DIR/$dir" "$dir"
   done
 
-  # Write checksums
-  if [ "$DRY_RUN" = false ]; then
-    write_checksums
+  # Write checksums into staging (temporarily point RULES_DIR at staging)
+  local orig_rules_dir="$RULES_DIR"
+  local orig_checksums="$CHECKSUMS_FILE"
+  RULES_DIR="$STAGING_DIR"
+  CHECKSUMS_FILE="$STAGING_DIR/.checksums"
+  write_checksums
+  RULES_DIR="$orig_rules_dir"
+  CHECKSUMS_FILE="$orig_checksums"
+
+  # Atomic move: place staged rules into final destination
+  mkdir -p "$(dirname "$RULES_DIR")"
+  if [ -d "$RULES_DIR" ]; then
+    # Merge staged files into existing directory (--force reinstall case)
+    cp -R "$STAGING_DIR"/* "$RULES_DIR"/
+    cp "$STAGING_DIR/.checksums" "$RULES_DIR/.checksums"
   else
-    info "[dry-run] Would write .checksums"
+    mv "$STAGING_DIR" "$RULES_DIR"
   fi
+  info "Rules installed to $RULES_DIR"
 
   # Generate CLAUDE.md
   local rules_prefix=".claude/rules/"
@@ -363,49 +430,39 @@ do_install() {
     rules_prefix="rules/"
   fi
 
-  if [ "$DRY_RUN" = true ]; then
-    info "[dry-run] Would generate CLAUDE.md:"
-    echo "---"
-    generate_claude_md "$rules_prefix"
-    echo "---"
-  elif [ -f "$CLAUDE_MD" ] && [ "$FORCE" = false ]; then
+  if [ -f "$CLAUDE_MD" ] && [ "$FORCE" = false ]; then
     info "CLAUDE.md already exists — skipping (use --force to overwrite)"
   else
+    if [ -f "$CLAUDE_MD" ] && [ "$FORCE" = true ]; then
+      backup_file "$CLAUDE_MD"
+    fi
     generate_claude_md "$rules_prefix" > "$CLAUDE_MD"
     info "Generated CLAUDE.md"
   fi
 
   # Global-only extras
   if [ "$GLOBAL" = true ]; then
-    if [ "$DRY_RUN" = true ]; then
-      info "[dry-run] Would create settings.json and .gitignore in $TARGET_DIR"
+    mkdir -p "$TARGET_DIR"
+
+    if [ ! -f "$TARGET_DIR/settings.json" ]; then
+      cp "$CLONE_DIR/starter/settings.json.example" "$TARGET_DIR/settings.json"
+      info "Created settings.json"
     else
-      mkdir -p "$TARGET_DIR"
+      info "settings.json already exists — skipping"
+    fi
 
-      if [ ! -f "$TARGET_DIR/settings.json" ]; then
-        cp "$CLONE_DIR/starter/settings.json.example" "$TARGET_DIR/settings.json"
-        info "Created settings.json"
-      else
-        info "settings.json already exists — skipping"
-      fi
-
-      if [ ! -f "$TARGET_DIR/.gitignore" ]; then
-        cp "$CLONE_DIR/starter/.gitignore.example" "$TARGET_DIR/.gitignore"
-        info "Created .gitignore"
-      else
-        info ".gitignore already exists — skipping"
-      fi
+    if [ ! -f "$TARGET_DIR/.gitignore" ]; then
+      cp "$CLONE_DIR/starter/.gitignore.example" "$TARGET_DIR/.gitignore"
+      info "Created .gitignore"
+    else
+      info ".gitignore already exists — skipping"
     fi
   fi
 
   echo ""
-  if [ "$DRY_RUN" = true ]; then
-    echo "Dry run complete — no files were written."
-  else
-    echo "claude-cortex installed successfully!"
-    echo "Rules are in: $RULES_DIR"
-    echo "Run with --update to pull upstream changes later."
-  fi
+  echo "claude-cortex installed successfully!"
+  echo "Rules are in: $RULES_DIR"
+  echo "Run with --update to pull upstream changes later."
 }
 
 # ── Update existing install ───────────────────────────────────────────────────
@@ -540,6 +597,7 @@ do_update() {
       if [ "$DRY_RUN" = true ]; then
         info "[dry-run] Would regenerate CLAUDE.md (--force)"
       else
+        backup_file "$CLAUDE_MD"
         generate_claude_md "$rules_prefix" > "$CLAUDE_MD"
         info "Regenerated CLAUDE.md (--force)"
       fi
