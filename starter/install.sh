@@ -1,6 +1,9 @@
 #!/bin/bash
 #
-# Claude Code Setup Script
+# Claude Code Setup Script (DEPRECATED)
+#
+# This script is deprecated. Use install.sh --global instead:
+#   curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash -s -- --global
 #
 # Creates ~/.claude with rules as a git submodule.
 # Safe to run multiple times - won't overwrite existing files.
@@ -9,6 +12,13 @@
 #
 
 set -e
+
+echo ""
+echo "[DEPRECATED] This script is deprecated. Use install.sh --global instead:"
+echo "  curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash -s -- --global"
+echo ""
+echo "Continuing with legacy installation..."
+echo ""
 
 CLAUDE_DIR="$HOME/.claude"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

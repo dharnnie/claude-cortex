@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# setup.sh — Detect project languages and generate a CLAUDE.md with relevant @rules/ references.
+# setup.sh — Detect project languages and regenerate CLAUDE.md from installed rules.
+# Useful for re-detecting languages after adding a new framework to the project.
+#
+# For first-time installation, use install.sh instead:
+#   curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash
+#
 # Compatible with Bash 3.2+ (macOS default).
 
 set -euo pipefail
@@ -15,14 +20,16 @@ usage() {
   cat <<'EOF'
 Usage: setup.sh [OPTIONS]
 
-Detect project languages and generate a CLAUDE.md referencing the
-appropriate coding-convention rules.
+Regenerate CLAUDE.md by detecting project languages and referencing
+installed coding-convention rules.
+
+For first-time installation, use install.sh instead.
 
 Options:
   --dry-run         Print generated CLAUDE.md to stdout without writing
   --output PATH     Override output path (default: ./CLAUDE.md)
   --force           Overwrite existing CLAUDE.md
-  --rules-path DIR  Path to the rules repository
+  --rules-path DIR  Path to the rules directory
   --help            Show this message
 EOF
   exit 0
@@ -44,6 +51,12 @@ done
 resolve_rules_path() {
   if [ -n "$RULES_PATH" ]; then
     echo "$RULES_PATH"
+    return
+  fi
+
+  # Check .claude/rules/ first (install.sh puts rules here)
+  if [ -d ".claude/rules/general" ]; then
+    echo ".claude/rules"
     return
   fi
 
@@ -188,7 +201,16 @@ build_section() {
     local desc
     desc="$(extract_description "$file")"
     local rel="$dir_name/$(basename "$file")"
-    echo "- @rules/$rel - $desc"
+    # Use .claude/rules/ prefix when rules are installed locally, rules/ otherwise
+    local rules_real
+    rules_real="$(cd "$RULES_PATH" && pwd)"
+    local cwd_claude
+    cwd_claude="$(cd "$(pwd)/.claude/rules" 2>/dev/null && pwd || echo "")"
+    if [ -n "$cwd_claude" ] && [ "$rules_real" = "$cwd_claude" ]; then
+      echo "- @.claude/rules/$rel - $desc"
+    else
+      echo "- @rules/$rel - $desc"
+    fi
   done
 }
 
