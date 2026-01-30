@@ -93,6 +93,17 @@ After installation, your `~/.claude` will look like:
     └── ruby/
 ```
 
+## Global vs Project Setup
+
+This starter configures your **global** `~/.claude` directory. For **project-level** `CLAUDE.md` generation that auto-detects languages and includes only relevant rules, use `setup.sh` from the repo root instead:
+
+```bash
+cd your-project/
+/path/to/claude-cortex/setup.sh
+```
+
+See the main [README](../README.md#project-level-setup) for details.
+
 ## Customization
 
 ### Change Notification Sound
