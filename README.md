@@ -1,45 +1,44 @@
 # Claude Cortex
 
-A library of coding convention rules for Claude Code. Use as a git submodule to maintain consistent AI-assisted development standards.
+A library of coding convention rules for Claude Code. Install with a single command to maintain consistent AI-assisted development standards.
 
-## Usage
+## Quick Start
 
-### As a Submodule (Recommended)
-
-Add to your `~/.claude` or project:
+From your project root:
 
 ```bash
-cd ~/.claude  # or your project
-git submodule add https://github.com/dharnnie/claude-cortex.git rules
+curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash
 ```
 
-> **Want to customize?** Fork this repo first, then use your fork URL:
-> ```bash
-> git submodule add https://github.com/YOUR_USERNAME/claude-cortex.git rules
-> ```
-> This lets you modify rules for your team while still pulling upstream updates.
-
-Reference rules in your `CLAUDE.md`:
-
-```markdown
-## Rules Reference
-
-### General
-- @rules/general/contributing.md
-- @rules/general/security.md
-
-### Go
-- @rules/golang/project-structure.md
-- @rules/golang/error-handling.md
-- @rules/golang/testing.md
-```
+This will:
+1. Detect your project's languages (via `go.mod`, `Gemfile`, `package.json`, etc.)
+2. Copy relevant rule files into `.claude/rules/`
+3. Generate a `CLAUDE.md` referencing the installed rules
 
 ### Update Rules
 
+Pull upstream changes without losing local edits:
+
 ```bash
-git submodule update --remote rules
-git add rules
-git commit -m "chore: update rules"
+curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash -s -- --update
+```
+
+Files you've modified locally are preserved — only unmodified files are updated.
+
+### More Options
+
+```bash
+# Preview without writing any files
+curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash -s -- --dry-run
+
+# Overwrite CLAUDE.md even if it exists
+curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash -s -- --force
+
+# Install globally to ~/.claude
+curl -fsSL https://raw.githubusercontent.com/dharnnie/claude-cortex/main/install.sh | bash -s -- --global
+
+# Use your fork
+curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/claude-cortex/main/install.sh | bash -s -- --repo https://github.com/YOUR_USERNAME/claude-cortex.git
 ```
 
 ## Available Rules
@@ -74,71 +73,68 @@ git commit -m "chore: update rules"
 | `ruby/security.md` | Authentication, authorization, SQL injection |
 | `ruby/contributing.md` | Ruby-specific workflow, CI |
 
-## Project-Level Setup
+## How It Works
 
-Use `setup.sh` to auto-generate a project-level `CLAUDE.md` that references only the rules relevant to your project's languages.
+The installer clones the repo to a temp directory, copies the relevant `.md` rule files into your project's `.claude/rules/` directory, and generates a `CLAUDE.md` at the project root. A `.checksums` file tracks original file hashes so `--update` can detect which files you've modified locally.
+
+### What Gets Installed
+
+```
+your-project/
+├── CLAUDE.md                          # Generated index of rules
+└── .claude/
+    └── rules/
+        ├── .checksums                 # Tracks original hashes for safe updates
+        ├── general/
+        │   ├── contributing.md
+        │   └── security.md
+        └── golang/                    # Only if go.mod detected
+            ├── project-structure.md
+            ├── error-handling.md
+            └── ...
+```
+
+### Regenerating CLAUDE.md
+
+If you add a new language to your project and want to re-detect:
 
 ```bash
-# From your project directory:
-/path/to/claude-cortex/setup.sh
-
-# Or with options:
-/path/to/claude-cortex/setup.sh --dry-run          # Preview without writing
-/path/to/claude-cortex/setup.sh --force             # Overwrite existing CLAUDE.md
-/path/to/claude-cortex/setup.sh --output custom.md  # Custom output path
-/path/to/claude-cortex/setup.sh --rules-path /path/to/rules  # Custom rules location
+/path/to/claude-cortex/setup.sh --force
 ```
 
-The script detects language marker files (`go.mod`, `Gemfile`, `package.json`, etc.) in the current directory and includes matching rule sets. General rules are always included.
+`setup.sh` regenerates `CLAUDE.md` from the already-installed rules.
 
-> **Note:** This is for *project-level* setup. For global `~/.claude` configuration, see the [Starter](#quick-start-with-starter) section below.
+## Manual / Advanced Setup
 
-## Quick Start with Starter
+### As a Git Submodule
 
-For a complete `~/.claude` setup including notifications, see `starter/`:
+If you prefer managing rules as a submodule:
 
 ```bash
-cd starter
-./install.sh
+cd ~/.claude  # or your project
+git submodule add https://github.com/dharnnie/claude-cortex.git rules
 ```
 
-This creates `~/.claude` with:
-- `CLAUDE.md` - Global preferences template
-- `settings.json` - Notification hooks
-- `rules/` - This repo as a submodule
+Reference rules in your `CLAUDE.md`:
 
-See `starter/README.md` for details.
+```markdown
+## Rules Reference
 
-## Structure
+### General
+- @rules/general/contributing.md
+- @rules/general/security.md
 
+### Go
+- @rules/golang/project-structure.md
+- @rules/golang/error-handling.md
 ```
-claude-cortex/
-├── README.md
-├── setup.sh
-├── general/
-│   ├── contributing.md
-│   └── security.md
-├── golang/
-│   ├── concurrency.md
-│   ├── dependencies.md
-│   ├── error-handling.md
-│   ├── project-structure.md
-│   ├── style.md
-│   └── testing.md
-├── ruby/
-│   ├── api.md
-│   ├── contributing.md
-│   ├── models.md
-│   ├── performance.md
-│   ├── security.md
-│   ├── services.md
-│   └── testing.md
-└── starter/
-    ├── README.md
-    ├── CLAUDE.md.example
-    ├── settings.json.example
-    ├── .gitignore.example
-    └── install.sh
+
+Update with:
+
+```bash
+git submodule update --remote rules
+git add rules
+git commit -m "chore: update rules"
 ```
 
 ## Adding Rules
@@ -166,6 +162,39 @@ paths:
 ### Per-Project Rules
 
 Add project-specific rules in your project's `.claude/rules/` directory. Project rules take precedence over global rules.
+
+## Structure
+
+```
+claude-cortex/
+├── README.md
+├── install.sh
+├── setup.sh
+├── general/
+│   ├── contributing.md
+│   └── security.md
+├── golang/
+│   ├── concurrency.md
+│   ├── dependencies.md
+│   ├── error-handling.md
+│   ├── project-structure.md
+│   ├── style.md
+│   └── testing.md
+├── ruby/
+│   ├── api.md
+│   ├── contributing.md
+│   ├── models.md
+│   ├── performance.md
+│   ├── security.md
+│   ├── services.md
+│   └── testing.md
+└── starter/
+    ├── README.md
+    ├── CLAUDE.md.example
+    ├── settings.json.example
+    ├── .gitignore.example
+    └── install.sh
+```
 
 ## License
 
