@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.rb"
+---
+
 # API Design
 
 ## Controller Structure

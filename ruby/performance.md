@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.rb"
+---
+
 # Performance Guidelines
 
 ## N+1 Query Prevention

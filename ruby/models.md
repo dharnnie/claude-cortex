@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.rb"
+  - "**/db/migrate/**"
+  - "**/db/schema.rb"
+---
+
 # Model Conventions
 
 ## Model Organization Order

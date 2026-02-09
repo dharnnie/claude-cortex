@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.rb"
+  - "Gemfile"
+  - "Rakefile"
+---
+
 # Contributing Guidelines
 
 ## Git Workflow
