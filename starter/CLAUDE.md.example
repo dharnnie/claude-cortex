@@ -1,45 +1,86 @@
 # Personal Claude Code Preferences
 
-## Coding Standards
+> This file loads into Claude's context on **every request**. Keep it lean —
+> move language-specific detail into rules files with `paths:` frontmatter
+> so they only load when relevant.
+
+## How Context Loading Works
+
+```
+Always loaded (every request):
+  CLAUDE.md             ← this file — keep under ~500 lines
+  rules without paths:  ← general/contributing.md, general/security.md
+
+Loaded on demand (only when editing matching files):
+  rules with paths:     ← golang/*.md, ruby/*.md, etc.
+```
+
+Put high-level preferences and commands here. Put detailed conventions in
+rules files scoped with `paths:` frontmatter.
+
+## Project Defaults
 
 ### Go
 - Go 1.22+
 - Standard library first, dependencies sparingly
 - `gofmt` and `goimports` on save
 - Table-driven tests
-- See @rules/golang/ for detailed conventions
 
 ### Ruby
 - Ruby 3.3+, Rails 8.0+
 - RSpec + FactoryBot for testing
-- Use Time.current not Time.now
+- Use `Time.current` not `Time.now`
 - Thin controllers, service objects for business logic
-- See @rules/ruby/ for detailed conventions
 
 ## Workflow
 - Always run tests before committing
-- Follow conventional commits
+- Follow conventional commits (`feat:`, `fix:`, `docs:`, `chore:`)
 - Plan before implementing non-trivial features
+
+## Common Commands
+
+```bash
+# Go
+go test ./...
+go vet ./...
+
+# Ruby
+bundle exec rspec
+bundle exec rubocop
+```
 
 ## Rules Reference
 
-### General (All Languages)
-- @rules/general/contributing.md - Git workflow, PRs, code review
-- @rules/general/security.md - Security checklist
+### Always-on (no paths: frontmatter — loaded every request)
+- @rules/general/contributing.md — Git workflow, PRs, code review
+- @rules/general/security.md — Security checklist
 
-### Go
-- @rules/golang/project-structure.md - Package design, layout
-- @rules/golang/error-handling.md - Error patterns
-- @rules/golang/testing.md - Table-driven tests, mocks
-- @rules/golang/concurrency.md - Goroutines, channels, sync
-- @rules/golang/style.md - Naming, formatting
-- @rules/golang/dependencies.md - Stdlib first, recommended libs
+### Go (loaded only when editing Go files)
+- @rules/golang/style.md — Naming, formatting
+- @rules/golang/error-handling.md — Error patterns
+- @rules/golang/testing.md — Table-driven tests, mocks
+- @rules/golang/concurrency.md — Goroutines, channels, sync
+- @rules/golang/project-structure.md — Package design, layout
+- @rules/golang/dependencies.md — Stdlib first, recommended libs
 
-### Ruby
-- @rules/ruby/models.md - Model conventions, migrations
-- @rules/ruby/services.md - Service objects, query objects, form objects
-- @rules/ruby/testing.md - RSpec, factories, request specs
-- @rules/ruby/api.md - API design, serializers, versioning
-- @rules/ruby/performance.md - N+1, caching, background jobs
-- @rules/ruby/security.md - Auth, authorization, SQL injection
-- @rules/ruby/contributing.md - Ruby-specific workflow, CI
+### Ruby (loaded only when editing Ruby files)
+- @rules/ruby/models.md — Model conventions, migrations
+- @rules/ruby/services.md — Service objects, query objects
+- @rules/ruby/testing.md — RSpec, factories, request specs
+- @rules/ruby/api.md — API design, serializers, versioning
+- @rules/ruby/performance.md — N+1, caching, background jobs
+- @rules/ruby/security.md — Auth, authorization, SQL injection
+- @rules/ruby/contributing.md — Ruby-specific workflow, CI
+
+## Context Budget Tips
+
+- **CLAUDE.md loads on every request.** Each line here costs context on every
+  interaction. Ask: "Would removing this cause Claude to make mistakes?" If
+  not, delete it or move it to a rules file.
+- **Rules without `paths:` also load every request.** The `general/` rules
+  have no frontmatter and are always present — keep them concise.
+- **Rules with `paths:` are free until triggered.** Language-specific rules
+  only load when Claude works on matching files. This is where detailed
+  conventions belong.
+- **Target ~500 lines or fewer for CLAUDE.md.** If it grows beyond that,
+  Claude may start ignoring rules buried in the noise.
