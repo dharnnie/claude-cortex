@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/*.rb"
+  - "**/config/**"
+---
+
 # Security Checklist
 
 ## Authentication

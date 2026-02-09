@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.rb"
+  - "**/*_spec.rb"
+  - "**/spec/**"
+---
+
 # Testing Conventions
 
 **Framework:** RSpec + FactoryBot + Shoulda Matchers

@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.rb"
+---
+
 # Service Objects
 
 **Location:** `app/services/`
